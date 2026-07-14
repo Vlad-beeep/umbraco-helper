@@ -35,4 +35,4 @@ or by removing the extension, which clears its storage.
 
 ## Contact
 
-For questions about this policy, contact: **<your email here>**
+For questions about this policy, contact: **vfea@xpandsoftware.com**
