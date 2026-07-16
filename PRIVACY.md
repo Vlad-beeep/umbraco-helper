@@ -2,7 +2,7 @@
 
 _Last updated: 2026-07-14_
 
-Umbraco Tooltip Manager ("the extension") is a UI utility that hides or toggles
+Umbraco Helper ("the extension") is a UI utility that hides or toggles
 tooltip/help text and adjusts small UI behaviours on Umbraco backoffice pages.
 
 ## What data the extension handles
