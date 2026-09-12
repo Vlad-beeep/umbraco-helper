@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="popup.css" />
+</head>
+<body>
+  <h1>Umbraco Helper <span id="enabled-tag" class="tag">Enabled</span></h1>
+
+  <div class="row">
+    <span class="label">Site</span>
+    <span id="host" class="value">—</span>
+  </div>
+  <div id="status" class="status">Checking…</div>
+
+  <div id="controls">
+  <button id="enable-toggle" class="toggle-btn">Disable for this site</button>
+
+  <div class="row">
+    <span class="label">Tooltips</span>
+    <select id="mode">
+      <option value="">Use global default</option>
+      <option value="hide">Completely hide</option>
+      <option value="button">Show button</option>
+      <option value="show">Always show</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <span class="label">Shortcuts</span>
+    <select id="shortcuts">
+      <option value="on">Enabled</option>
+      <option value="off">Disabled</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <span class="label">Sidebar animation</span>
+    <select id="anim">
+      <option value="on">Default</option>
+      <option value="off">Disabled</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <span class="label">Compact fields</span>
+    <select id="compactFields">
+      <option value="on">Enabled</option>
+      <option value="off">Disabled</option>
+    </select>
+  </div>
+
+  <div class="row">
+    <span class="label">Compact tree</span>
+    <select id="compactTree">
+      <option value="on">Enabled</option>
+      <option value="off">Disabled</option>
+    </select>
+  </div>
+  </div>
+
+  <div class="footer">
+    <button id="open-options" class="link">All settings & sites →</button>
+  </div>
+
+  <script src="defaults.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

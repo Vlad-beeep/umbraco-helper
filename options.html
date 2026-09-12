@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="options.css" />
+</head>
+<body>
+  <div class="wrap">
+    <h1>Umbraco Helper — Settings</h1>
+
+    <section>
+      <h2>General</h2>
+      <div class="field">
+        <label for="globalMode">Default tooltip mode</label>
+        <select id="globalMode">
+          <option value="hide">Completely hide</option>
+          <option value="button">Show button</option>
+          <option value="show">Always show</option>
+        </select>
+        <p class="hint">Applied to any managed site that has no per-site override.</p>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="autoDetect" /> Auto-detect Umbraco sites and add them to the list</label>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="handleTitles" /> Also remove native hover tooltips (title attributes) when active</label>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="disableSidebarAnimation" /> Remove the slide/fade animation when side panels open</label>
+        <p class="hint">Umbraco panels/overlays appear instantly instead of animating in. Target elements are editable under “Tooltip selectors” → Sidebar animation targets.</p>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="compactSpacing" /> Compact Fields View</label>
+        <p class="hint">Removes the extra margin under each field caption and puts the tooltip “ⓘ” button on the same line as the caption, so fields take less space. When off, spacing and tooltip position are unchanged.</p>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="compactTree" /> Compact Content tree</label>
+        <p class="hint">Removes the vertical padding on Content tree items so more fit in the sidebar.</p>
+      </div>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="notificationHalfWidth" /> Halve the width of publish/save toast notifications</label>
+      </div>
+      <div class="field">
+        <label for="notificationTimeout">Auto-dismiss toast notifications after (ms)</label>
+        <input type="number" id="notificationTimeout" min="0" step="500" placeholder="leave empty = Umbraco default" style="width:220px" />
+        <p class="hint">The green/yellow messages after publishing disappear after this long. <b>2000</b> = 2 seconds. Leave empty to keep Umbraco’s default timing.</p>
+      </div>
+    </section>
+
+    <section>
+      <h2>Close sidebars with ESC</h2>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="escClose" /> Press <b>ESC</b> to close the open sidebar/overlay (clicks its Close/Cancel button)</label>
+        <p class="hint">Umbraco pickers and the “Group filters” builder don’t close on ESC by themselves. This finds the top-most open overlay and clicks its dismiss button.</p>
+      </div>
+      <div class="field">
+        <label for="escCloseLabels">Dismiss button labels (priority order, one per line)</label>
+        <textarea id="escCloseLabels" rows="3" spellcheck="false"></textarea>
+      </div>
+      <div class="field">
+        <label for="overlaySelectors">Overlay containers (one per line)</label>
+        <p class="hint">ESC only acts when one of these is open, so a stray Cancel button is never clicked by accident. Add the “Group filters” panel’s container here if it isn’t caught.</p>
+        <textarea id="overlaySelectors" rows="4" spellcheck="false"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>Submit with Enter</h2>
+      <div class="field">
+        <label class="check"><input type="checkbox" id="enterSubmit" /> Press <b>Enter</b> to click the primary action button (shows a <b>↵</b> marker on it)</label>
+        <p class="hint">Ignored while you’re typing in a field or when a modifier key (Shift/Ctrl/Alt) is held, so it won’t save/publish by accident.</p>
+      </div>
+      <div class="field">
+        <label for="enterButtonLabels">Button labels Enter should press (priority order, one per line)</label>
+        <p class="hint">An open overlay’s button (e.g. “Submit”) is preferred over the main editor’s (“Save and publish...”).</p>
+        <textarea id="enterButtonLabels" rows="3" spellcheck="false"></textarea>
+      </div>
+    </section>
+
+    <section>
+      <h2>Managed sites</h2>
+      <p class="hint">The extension runs automatically on any page whose URL contains <code>umbraco</code>. Sites are added here as you visit them; use this list to disable the extension on a site or set a per-site mode. You can also pre-add a domain below.</p>
+      <table id="sites">
+        <thead>
+          <tr><th>Domain</th><th>Enabled</th><th></th></tr>
+        </thead>
+        <tbody id="sites-body"></tbody>
+      </table>
+      <div class="add-row">
+        <input type="text" id="new-site" placeholder="add a domain, e.g. umbraco.example.com" />
+        <button id="add-site">Add</button>
+      </div>
+      <p id="site-msg" class="hint"></p>
+    </section>
+
+    <section>
+      <h2>Tooltip selectors</h2>
+      <p class="hint">CSS selectors treated as "tooltips / help text" — one per line. Tune these after inspecting a real Umbraco page (right-click the help text → Inspect → copy its class).</p>
+      <textarea id="selectors" rows="10" spellcheck="false"></textarea>
+      <div class="btns">
+        <button id="reset-selectors" class="secondary">Reset to defaults</button>
+      </div>
+
+      <label for="animSelectors" style="margin-top:16px">Sidebar animation targets</label>
+      <p class="hint">Elements whose open/close animation is removed by the “Remove the slide/fade animation” setting — one selector per line.</p>
+      <textarea id="animSelectors" rows="4" spellcheck="false"></textarea>
+      <div class="btns">
+        <button id="reset-anim" class="secondary">Reset to defaults</button>
+      </div>
+    </section>
+
+    <div class="save-bar">
+      <button id="save">Save</button>
+      <span id="saved" class="saved"></span>
+    </div>
+  </div>
+
+  <script src="defaults.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

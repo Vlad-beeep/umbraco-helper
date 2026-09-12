@@ -1,0 +1,101 @@
+.utm-hide {
+  display: none !important;
+}
+
+.utm-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  margin: 0 0 0 2px;
+  font-size: 12px;
+  line-height: 1;
+  color: #9aa3ba;
+  background: transparent;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+  vertical-align: middle;
+  opacity: 0;
+  transition: opacity 0.12s ease;
+}
+/* Reveal only when hovering the field/row, or while its bubble is open (focus). */
+.utm-host:hover .utm-btn,
+.utm-btn:focus {
+  opacity: 0.65;
+}
+.utm-btn:hover,
+.utm-btn:focus {
+  color: #2b56c6;
+  opacity: 1;
+}
+
+.utm-bubble {
+  position: absolute;
+  z-index: 2147483647;
+  max-width: 360px;
+  padding: 8px 26px 8px 10px;
+  font-size: 13px;
+  line-height: 1.4;
+  color: #1b1b1b;
+  background: #ffffff;
+  border: 1px solid #c3cbe0;
+  border-radius: 6px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+.utm-bubble-text {
+  word-wrap: break-word;
+}
+.utm-bubble-close {
+  position: absolute;
+  top: 2px;
+  right: 6px;
+  font-size: 16px;
+  line-height: 1;
+  color: #888;
+  cursor: pointer;
+}
+.utm-bubble-close:hover {
+  color: #222;
+}
+
+/* Keycap hints appended to shortcut buttons: "↵" for Enter-submit, "ESC" for
+   Escape-close. Umbraco buttons keep their label in a flex span
+   (.umb-button__content); the marker must live *inside* that span or it wraps
+   to a new line. Plain buttons get it via their own ::after. */
+.utm-enter,
+.utm-esc {
+  white-space: nowrap !important;
+}
+.utm-enter .umb-button__content,
+.utm-esc .umb-button__content {
+  white-space: nowrap;
+}
+.utm-enter .umb-button__content::after,
+.utm-enter:not(:has(.umb-button__content))::after,
+.utm-esc .umb-button__content::after,
+.utm-esc:not(:has(.umb-button__content))::after {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 5px;
+  line-height: 1.4;
+  font-weight: 700;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  opacity: 0.55;
+  vertical-align: middle;
+}
+.utm-enter .umb-button__content::after,
+.utm-enter:not(:has(.umb-button__content))::after {
+  content: "↵";
+  font-size: 0.8em;
+}
+.utm-esc .umb-button__content::after,
+.utm-esc:not(:has(.umb-button__content))::after {
+  content: "ESC";
+  font-size: 0.62em;
+  letter-spacing: 0.02em;
+}

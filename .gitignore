@@ -1,0 +1,7 @@
+# Build artifacts (regenerate with: python package.py)
+umbraco-helper-*.zip
+
+# OS / editor cruft
+Thumbs.db
+.DS_Store
+*.swp

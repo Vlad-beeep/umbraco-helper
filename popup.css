@@ -1,0 +1,88 @@
+* { box-sizing: border-box; }
+body {
+  width: 300px;
+  margin: 0;
+  padding: 12px 14px;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-size: 13px;
+  color: #1b264f;
+}
+h1 {
+  margin: 0 0 10px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.tag {
+  display: none;
+  vertical-align: middle;
+  margin-left: 6px;
+  padding: 1px 7px;
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 10px;
+}
+.tag.enabled { background: #e4f6e8; color: #1b6b2f; }
+.tag.disabled { background: #fdecea; color: #a3261b; }
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 8px 0;
+}
+.label { color: #55607a; }
+.value {
+  font-weight: 600;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.status {
+  margin: 4px 0 10px;
+  padding: 6px 8px;
+  border-radius: 6px;
+  background: #eef1f7;
+  font-size: 12px;
+}
+.status.active { background: #e4f6e8; color: #1b6b2f; }
+.status.inactive { background: #f7ece4; color: #8a4b1b; }
+.switch-label { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.toggle-btn {
+  width: 100%;
+  margin: 0 0 10px;
+  padding: 7px 10px;
+  border: 1px solid #c3cbe0;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  background: #eef1f7;
+  color: #1b264f;
+}
+.toggle-btn.is-enabled { background: #fbece0; border-color: #e6b9a0; color: #9a4b1b; }
+.toggle-btn.is-disabled { background: #e4f6e8; border-color: #a9dcb6; color: #1b6b2f; }
+.toggle-btn:hover { filter: brightness(0.97); }
+select {
+  padding: 3px 6px;
+  border: 1px solid #c3cbe0;
+  border-radius: 5px;
+  font-size: 13px;
+  min-width: 150px;
+}
+.row.muted { opacity: 0.5; pointer-events: none; }
+.footer {
+  margin-top: 12px;
+  padding-top: 10px;
+  border-top: 1px solid #e3e7f0;
+  text-align: right;
+}
+.link {
+  background: none;
+  border: none;
+  color: #2b56c6;
+  cursor: pointer;
+  font-size: 13px;
+  padding: 0;
+}
+.link:hover { text-decoration: underline; }
+select:disabled, input:disabled { opacity: 0.5; }
