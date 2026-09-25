@@ -11,7 +11,8 @@ const el = {
   anim: document.getElementById("anim"),
   compactFields: document.getElementById("compactFields"),
   compactTree: document.getElementById("compactTree"),
-  options: document.getElementById("open-options")
+  options: document.getElementById("open-options"),
+  version: document.getElementById("version")
 };
 
 let settings = null;
@@ -130,6 +131,7 @@ el.compactTree.addEventListener("change", () => {
 el.options.addEventListener("click", () => chrome.runtime.openOptionsPage());
 
 (async function init() {
+  el.version.textContent = "v" + chrome.runtime.getManifest().version;
   settings = await getSettings();
   const tab = await activeTab();
   try {

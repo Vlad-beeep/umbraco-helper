@@ -9,6 +9,7 @@
   let applyTimer = null;
   let bubble = null;
   let styleEl = null;
+  let reportedActive = null; // last state sent to the toolbar icon
 
   function getSettings() {
     return new Promise((resolve) => {
@@ -56,6 +57,18 @@
     }
 
     active = false;
+  }
+
+  // Tell the background which toolbar icon this tab should show. Only sends on
+  // change; switching from inactive to active makes the icon blink.
+  function reportState() {
+    if (active === reportedActive) return;
+    reportedActive = active;
+    try {
+      chrome.runtime.sendMessage({ type: "utm-state", active, blink: active }).catch(() => {});
+    } catch (e) {
+      // Extension was reloaded; this orphaned content script can't talk to it.
+    }
   }
 
   // ---- Instant hide via injected CSS -----------------------------------------
@@ -457,6 +470,7 @@
       // Re-check in case activation state changed (e.g. SPA route change).
       if (!active) {
         resolveActivation();
+        reportState();
         if (active) { updateStyle(); startObserver(); }
       }
       applyAll();
@@ -480,6 +494,7 @@
   async function init() {
     settings = await getSettings();
     resolveActivation();
+    reportState();
     revertAll();
     updateStyle();
     if (active) {

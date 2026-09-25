@@ -24,8 +24,13 @@ INCLUDE = [
     "options.css",
     "options.js",
     "icons/icon16.png",
+    "icons/icon32.png",
     "icons/icon48.png",
     "icons/icon128.png",
+    "icons/state/off16.png",
+    "icons/state/off32.png",
+    "icons/state/blink16.png",
+    "icons/state/blink32.png",
 ]
 
 # Explicitly NOT shipped: README.md, PRIVACY.md, STORE_LISTING.md, main.js, this script.

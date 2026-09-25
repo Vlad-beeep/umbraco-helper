@@ -16,6 +16,7 @@ A Chrome extension that declutters the **Umbraco backoffice** — hide tooltips,
 | ⚡ | **No animation** — side panels open instantly instead of sliding |
 | 📏 | **Compact view** — tighter field spacing and a denser content tree |
 | 🔔 | **Tidy notifications** — the green/yellow publish toasts are smaller and auto-dismiss |
+| 🚦 | **Status icon** — grey when off, blue when working, blinks green twice when a site is picked up |
 
 ---
 
