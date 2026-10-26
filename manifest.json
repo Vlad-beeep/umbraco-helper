@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Umbraco Helper",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "Hide, button-toggle, or show tooltips / help text on Umbraco backoffice pages, plus handy keyboard and UI tweaks.",
   "permissions": ["storage", "activeTab"],
   "background": { "service_worker": "background.js" },

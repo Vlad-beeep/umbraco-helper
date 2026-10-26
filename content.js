@@ -421,14 +421,14 @@
     });
   }
 
-  // ---- Auto-expand the Content tree ------------------------------------------
-  // On entering Content, open the root node and every node one level below it
-  // (the "Site" level) - names vary and there can be several of them. The recycle
-  // bin is never touched. Each node is auto-opened only once, so if you collapse
-  // one by hand it stays collapsed.
+  // ---- Auto-expand tree nodes ------------------------------------------------
+  // In Content: open the root and every node one level below it (the "Site"
+  // level) - names vary and there can be several. In any section: also open the
+  // nodes listed in autoExpandNames. The recycle bin is never touched, and each
+  // node is auto-opened only once, so collapsing one by hand sticks.
   function autoExpandTree() {
     if (!settings.autoExpandTree) return;
-    if (!/^#\/content(\/|\?|$)/.test(location.hash)) return; // Content section only
+    const isContent = /^#\/content(\/|\?|$)/.test(location.hash);
 
     // The main nav tree. NB: the left nav itself is a ".umb-modalcolumn", so that
     // class must NOT be used to exclude pickers - only overlays/infinite editors.
@@ -448,14 +448,14 @@
       const link = li.querySelector("a.umb-tree-item__label");
       if (link && /recyclebin/i.test(link.getAttribute("href") || "")) return;
 
-      // Depth 0 = root, 1 = its direct children ("Site"). Anything deeper opens
-      // only when its label is on the autoExpandNames list.
       let depth = 0;
       for (let p = li.parentElement; p && p !== tree; p = p.parentElement) {
         if (p.matches && p.matches("li.umb-tree-item")) depth++;
       }
       const named = !!link && names.includes(link.textContent.trim().toLowerCase());
-      if (depth > 1 && !named) return;
+      // Content: the root and the "Site" level. Any section: nodes named on
+      // the list (e.g. Media > "Site settings", Settings > "Portal maintenance").
+      if (!named && !(isContent && depth <= 1)) return;
 
       li.dataset.utmExp = "1";
       const ul = li.querySelector(":scope > ul");
