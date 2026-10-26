@@ -5,7 +5,7 @@
     // Bump this whenever a shipped "system" list below (selectors / labels /
     // overlay selectors) changes, so existing installs pick up the new values
     // on reload instead of keeping their frozen stored copy. See background.js.
-    defaultsVersion: 5,
+    defaultsVersion: 6,
 
     // Global tooltip mode: "button" | "hide" | "show"
     //   button -> replace tooltip/help text with an "ⓘ Show tooltip" button
@@ -85,6 +85,10 @@
     // On entering Content, auto-expand the tree root and the level below it
     // (the "Site" nodes). The recycle bin is never expanded.
     autoExpandTree: true,
+
+    // Extra tree nodes to auto-expand, matched by their exact label (any depth).
+    // Their parents must already be open for them to be reachable.
+    autoExpandNames: ["Site Settings", "Portal maintenance"],
 
     // Publish/save toast notifications (green success / yellow warning).
     // Halve their width (height grows to fit if text wraps).

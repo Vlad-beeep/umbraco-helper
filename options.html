@@ -42,6 +42,11 @@
         <p class="hint">When you open Content, the tree root and the level below it (the &ldquo;Site&rdquo; nodes, however they are named &mdash; all of them) open automatically. The recycle bin is left alone, and nodes you collapse by hand stay collapsed.</p>
       </div>
       <div class="field">
+        <label for="autoExpandNames">Also auto-expand nodes named (one per line)</label>
+        <p class="hint">Matched by exact label at any depth &mdash; the node&rsquo;s parent must already be open for it to be reachable.</p>
+        <textarea id="autoExpandNames" rows="3" spellcheck="false"></textarea>
+      </div>
+      <div class="field">
         <label class="check"><input type="checkbox" id="notificationHalfWidth" /> Halve the width of publish/save toast notifications</label>
       </div>
       <div class="field">

@@ -8,6 +8,7 @@ const el = {
   compactSpacing: document.getElementById("compactSpacing"),
   compactTree: document.getElementById("compactTree"),
   autoExpandTree: document.getElementById("autoExpandTree"),
+  autoExpandNames: document.getElementById("autoExpandNames"),
   notificationHalfWidth: document.getElementById("notificationHalfWidth"),
   notificationTimeout: document.getElementById("notificationTimeout"),
   animSelectors: document.getElementById("animSelectors"),
@@ -127,6 +128,8 @@ el.save.addEventListener("click", () => {
     .split("\n").map((s) => s.trim()).filter(Boolean);
   const animSelectors = el.animSelectors.value
     .split("\n").map((s) => s.trim()).filter(Boolean);
+  const autoExpandNames = el.autoExpandNames.value
+    .split("\n").map((s) => s.trim()).filter(Boolean);
 
   const payload = {
     globalMode: el.globalMode.value,
@@ -136,6 +139,7 @@ el.save.addEventListener("click", () => {
     compactSpacing: el.compactSpacing.checked,
     compactTree: el.compactTree.checked,
     autoExpandTree: el.autoExpandTree.checked,
+    autoExpandNames: autoExpandNames.length ? autoExpandNames : DEFAULTS.autoExpandNames,
     notificationHalfWidth: el.notificationHalfWidth.checked,
     notificationTimeout: el.notificationTimeout.value.trim() === ""
       ? "" : Math.max(0, parseInt(el.notificationTimeout.value, 10) || 0),
@@ -163,6 +167,7 @@ el.save.addEventListener("click", () => {
   el.compactSpacing.checked = state.compactSpacing !== false;
   el.compactTree.checked = state.compactTree !== false;
   el.autoExpandTree.checked = state.autoExpandTree !== false;
+  el.autoExpandNames.value = (state.autoExpandNames || DEFAULTS.autoExpandNames).join("\n");
   el.notificationHalfWidth.checked = state.notificationHalfWidth !== false;
   el.notificationTimeout.value = state.notificationTimeout === "" || state.notificationTimeout == null
     ? "" : state.notificationTimeout;

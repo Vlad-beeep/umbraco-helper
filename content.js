@@ -437,19 +437,25 @@
         .find((t) => !t.closest(".umb-overlay, .umb-editor--infiniteMode"));
     if (!tree) return;
 
+    const names = (settings.autoExpandNames || [])
+      .map((n) => String(n).trim().toLowerCase())
+      .filter(Boolean);
+
     tree.querySelectorAll("li.umb-tree-item").forEach((li) => {
       if (li.dataset.utmExp === "1") return;
       if (!li.classList.contains("has-children")) return;
 
-      // Depth 0 = root, 1 = its direct children. Nothing deeper.
+      const link = li.querySelector("a.umb-tree-item__label");
+      if (link && /recyclebin/i.test(link.getAttribute("href") || "")) return;
+
+      // Depth 0 = root, 1 = its direct children ("Site"). Anything deeper opens
+      // only when its label is on the autoExpandNames list.
       let depth = 0;
       for (let p = li.parentElement; p && p !== tree; p = p.parentElement) {
         if (p.matches && p.matches("li.umb-tree-item")) depth++;
       }
-      if (depth > 1) return;
-
-      const link = li.querySelector("a.umb-tree-item__label");
-      if (link && /recyclebin/i.test(link.getAttribute("href") || "")) return;
+      const named = !!link && names.includes(link.textContent.trim().toLowerCase());
+      if (depth > 1 && !named) return;
 
       li.dataset.utmExp = "1";
       const ul = li.querySelector(":scope > ul");
