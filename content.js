@@ -421,11 +421,50 @@
     });
   }
 
+  // ---- Auto-expand the Content tree ------------------------------------------
+  // On entering Content, open the root node and every node one level below it
+  // (the "Site" level) - names vary and there can be several of them. The recycle
+  // bin is never touched. Each node is auto-opened only once, so if you collapse
+  // one by hand it stays collapsed.
+  function autoExpandTree() {
+    if (!settings.autoExpandTree) return;
+    if (!/^#\/content(\/|\?|$)/.test(location.hash)) return; // Content section only
+
+    // The main nav tree. NB: the left nav itself is a ".umb-modalcolumn", so that
+    // class must NOT be used to exclude pickers - only overlays/infinite editors.
+    const tree = document.querySelector(".navigation-inner-container .umb-tree") ||
+      Array.from(document.querySelectorAll(".umb-tree"))
+        .find((t) => !t.closest(".umb-overlay, .umb-editor--infiniteMode"));
+    if (!tree) return;
+
+    tree.querySelectorAll("li.umb-tree-item").forEach((li) => {
+      if (li.dataset.utmExp === "1") return;
+      if (!li.classList.contains("has-children")) return;
+
+      // Depth 0 = root, 1 = its direct children. Nothing deeper.
+      let depth = 0;
+      for (let p = li.parentElement; p && p !== tree; p = p.parentElement) {
+        if (p.matches && p.matches("li.umb-tree-item")) depth++;
+      }
+      if (depth > 1) return;
+
+      const link = li.querySelector("a.umb-tree-item__label");
+      if (link && /recyclebin/i.test(link.getAttribute("href") || "")) return;
+
+      li.dataset.utmExp = "1";
+      const ul = li.querySelector(":scope > ul");
+      if (ul && getComputedStyle(ul).display !== "none") return; // already open
+      const arrow = li.querySelector(".umb-tree-item__arrow");
+      if (arrow) arrow.click(); // children load async; the observer re-runs us
+    });
+  }
+
   function applyAll() {
     if (!active) return;
     decorateEnterButtons(); // runs in every mode, incl. "show"
     decorateEscButtons();
     handleNotifications();
+    autoExpandTree();
     if (mode === "show") return;
     const sel = settings.selectors.join(",");
     if (sel && mode === "button") {
@@ -460,6 +499,7 @@
     });
     document.querySelectorAll(".utm-enter").forEach((el) => el.classList.remove("utm-enter"));
     document.querySelectorAll(".utm-esc").forEach((el) => el.classList.remove("utm-esc"));
+    document.querySelectorAll("[data-utm-exp]").forEach((el) => { delete el.dataset.utmExp; });
     hideBubble();
   }
 

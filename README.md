@@ -15,6 +15,7 @@ A Chrome extension that declutters the **Umbraco backoffice** — hide tooltips,
 | ⌨️ | **Shortcuts** — `Esc` closes sidebars & dialogs (incl. *Discard changes*), `Enter` runs *Submit / Save and publish* |
 | ⚡ | **No animation** — side panels open instantly instead of sliding |
 | 📏 | **Compact view** — tighter field spacing and a denser content tree |
+| 🌳 | **Auto-expand tree** — opening Content unfolds the root and the “Site” level automatically |
 | 🔔 | **Tidy notifications** — the green/yellow publish toasts are smaller and auto-dismiss |
 | 🚦 | **Status icon** — grey when off, blue when working, blinks green twice when a site is picked up |
 

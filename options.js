@@ -7,6 +7,7 @@ const el = {
   disableSidebarAnimation: document.getElementById("disableSidebarAnimation"),
   compactSpacing: document.getElementById("compactSpacing"),
   compactTree: document.getElementById("compactTree"),
+  autoExpandTree: document.getElementById("autoExpandTree"),
   notificationHalfWidth: document.getElementById("notificationHalfWidth"),
   notificationTimeout: document.getElementById("notificationTimeout"),
   animSelectors: document.getElementById("animSelectors"),
@@ -134,6 +135,7 @@ el.save.addEventListener("click", () => {
     disableSidebarAnimation: el.disableSidebarAnimation.checked,
     compactSpacing: el.compactSpacing.checked,
     compactTree: el.compactTree.checked,
+    autoExpandTree: el.autoExpandTree.checked,
     notificationHalfWidth: el.notificationHalfWidth.checked,
     notificationTimeout: el.notificationTimeout.value.trim() === ""
       ? "" : Math.max(0, parseInt(el.notificationTimeout.value, 10) || 0),
@@ -160,6 +162,7 @@ el.save.addEventListener("click", () => {
   el.disableSidebarAnimation.checked = state.disableSidebarAnimation !== false;
   el.compactSpacing.checked = state.compactSpacing !== false;
   el.compactTree.checked = state.compactTree !== false;
+  el.autoExpandTree.checked = state.autoExpandTree !== false;
   el.notificationHalfWidth.checked = state.notificationHalfWidth !== false;
   el.notificationTimeout.value = state.notificationTimeout === "" || state.notificationTimeout == null
     ? "" : state.notificationTimeout;

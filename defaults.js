@@ -82,6 +82,10 @@
     // Remove the vertical padding on Content tree list items (tighter tree).
     compactTree: true,
 
+    // On entering Content, auto-expand the tree root and the level below it
+    // (the "Site" nodes). The recycle bin is never expanded.
+    autoExpandTree: true,
+
     // Publish/save toast notifications (green success / yellow warning).
     // Halve their width (height grows to fit if text wraps).
     notificationHalfWidth: true,

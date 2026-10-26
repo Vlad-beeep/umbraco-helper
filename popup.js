@@ -11,6 +11,7 @@ const el = {
   anim: document.getElementById("anim"),
   compactFields: document.getElementById("compactFields"),
   compactTree: document.getElementById("compactTree"),
+  autoExpandTree: document.getElementById("autoExpandTree"),
   options: document.getElementById("open-options"),
   version: document.getElementById("version")
 };
@@ -59,6 +60,7 @@ function render() {
   el.anim.value = settings.disableSidebarAnimation ? "off" : "on";
   el.compactFields.value = settings.compactSpacing !== false ? "on" : "off";
   el.compactTree.value = settings.compactTree !== false ? "on" : "off";
+  el.autoExpandTree.value = settings.autoExpandTree !== false ? "on" : "off";
 
   if (!urlIsUmbraco) {
     // Not an Umbraco page: hide all options, just show the reason.
@@ -125,6 +127,13 @@ el.compactTree.addEventListener("change", () => {
   const on = el.compactTree.value === "on";
   chrome.storage.sync.set({ compactTree: on });
   settings.compactTree = on;
+  render();
+});
+
+el.autoExpandTree.addEventListener("change", () => {
+  const on = el.autoExpandTree.value === "on";
+  chrome.storage.sync.set({ autoExpandTree: on });
+  settings.autoExpandTree = on;
   render();
 });
 
