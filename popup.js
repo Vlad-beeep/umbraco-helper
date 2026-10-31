@@ -12,6 +12,7 @@ const el = {
   compactFields: document.getElementById("compactFields"),
   compactTree: document.getElementById("compactTree"),
   autoExpandTree: document.getElementById("autoExpandTree"),
+  prodBadge: document.getElementById("prodBadge"),
   options: document.getElementById("open-options"),
   version: document.getElementById("version")
 };
@@ -61,6 +62,7 @@ function render() {
   el.compactFields.value = settings.compactSpacing !== false ? "on" : "off";
   el.compactTree.value = settings.compactTree !== false ? "on" : "off";
   el.autoExpandTree.value = settings.autoExpandTree !== false ? "on" : "off";
+  el.prodBadge.value = settings.prodBadge !== false ? "on" : "off";
 
   if (!urlIsUmbraco) {
     // Not an Umbraco page: hide all options, just show the reason.
@@ -134,6 +136,13 @@ el.autoExpandTree.addEventListener("change", () => {
   const on = el.autoExpandTree.value === "on";
   chrome.storage.sync.set({ autoExpandTree: on });
   settings.autoExpandTree = on;
+  render();
+});
+
+el.prodBadge.addEventListener("change", () => {
+  const on = el.prodBadge.value === "on";
+  chrome.storage.sync.set({ prodBadge: on });
+  settings.prodBadge = on;
   render();
 });
 

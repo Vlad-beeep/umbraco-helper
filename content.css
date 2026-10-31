@@ -99,3 +99,21 @@
   font-size: 0.62em;
   letter-spacing: 0.02em;
 }
+
+/* "Production environment" warning in the backoffice top bar. */
+.utm-prod-badge {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 16px;
+  padding: 3px 12px;
+  border: 1px solid rgba(255, 110, 110, 0.55);
+  border-radius: 4px;
+  background: rgba(214, 28, 28, 0.18);
+  color: #ff6b6b;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  white-space: nowrap;
+  list-style: none;
+  pointer-events: none;
+}

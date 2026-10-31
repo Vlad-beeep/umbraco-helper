@@ -5,7 +5,7 @@ importScripts("defaults.js");
 
 // Lists owned by the extension defaults. On a defaultsVersion bump these are
 // reset to the shipped values; everything else keeps the stored value.
-const SYSTEM_KEYS = ["selectors", "escCloseLabels", "overlaySelectors", "enterButtonLabels", "animSelectors", "autoExpandNames"];
+const SYSTEM_KEYS = ["selectors", "escCloseLabels", "overlaySelectors", "enterButtonLabels", "animSelectors", "autoExpandNames", "nonProdMarkers"];
 
 function syncDefaults() {
   chrome.storage.sync.get(null, (stored) => {

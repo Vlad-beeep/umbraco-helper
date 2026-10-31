@@ -5,7 +5,7 @@
     // Bump this whenever a shipped "system" list below (selectors / labels /
     // overlay selectors) changes, so existing installs pick up the new values
     // on reload instead of keeping their frozen stored copy. See background.js.
-    defaultsVersion: 6,
+    defaultsVersion: 7,
 
     // Global tooltip mode: "button" | "hide" | "show"
     //   button -> replace tooltip/help text with an "ⓘ Show tooltip" button
@@ -89,6 +89,12 @@
     // Extra tree nodes to auto-expand, matched by their exact label (any depth).
     // Their parents must already be open for them to be reachable.
     autoExpandNames: ["Site Settings", "Portal maintenance"],
+
+    // Warn that you are on production. A non-production URL carries one of the
+    // markers below; when none is present the top bar gets a red label.
+    prodBadge: true,
+    prodBadgeText: "Production environment",
+    nonProdMarkers: ["test", "acc", "tst", "local"],
 
     // Publish/save toast notifications (green success / yellow warning).
     // Halve their width (height grows to fit if text wraps).

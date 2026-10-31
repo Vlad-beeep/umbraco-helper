@@ -9,6 +9,9 @@ const el = {
   compactTree: document.getElementById("compactTree"),
   autoExpandTree: document.getElementById("autoExpandTree"),
   autoExpandNames: document.getElementById("autoExpandNames"),
+  prodBadge: document.getElementById("prodBadge"),
+  prodBadgeText: document.getElementById("prodBadgeText"),
+  nonProdMarkers: document.getElementById("nonProdMarkers"),
   notificationHalfWidth: document.getElementById("notificationHalfWidth"),
   notificationTimeout: document.getElementById("notificationTimeout"),
   animSelectors: document.getElementById("animSelectors"),
@@ -128,6 +131,8 @@ el.save.addEventListener("click", () => {
     .split("\n").map((s) => s.trim()).filter(Boolean);
   const animSelectors = el.animSelectors.value
     .split("\n").map((s) => s.trim()).filter(Boolean);
+  const nonProdMarkers = el.nonProdMarkers.value
+    .split("\n").map((s) => s.trim()).filter(Boolean);
   const autoExpandNames = el.autoExpandNames.value
     .split("\n").map((s) => s.trim()).filter(Boolean);
 
@@ -140,6 +145,9 @@ el.save.addEventListener("click", () => {
     compactTree: el.compactTree.checked,
     autoExpandTree: el.autoExpandTree.checked,
     autoExpandNames: autoExpandNames.length ? autoExpandNames : DEFAULTS.autoExpandNames,
+    prodBadge: el.prodBadge.checked,
+    prodBadgeText: el.prodBadgeText.value.trim() || DEFAULTS.prodBadgeText,
+    nonProdMarkers: nonProdMarkers.length ? nonProdMarkers : DEFAULTS.nonProdMarkers,
     notificationHalfWidth: el.notificationHalfWidth.checked,
     notificationTimeout: el.notificationTimeout.value.trim() === ""
       ? "" : Math.max(0, parseInt(el.notificationTimeout.value, 10) || 0),
@@ -168,6 +176,9 @@ el.save.addEventListener("click", () => {
   el.compactTree.checked = state.compactTree !== false;
   el.autoExpandTree.checked = state.autoExpandTree !== false;
   el.autoExpandNames.value = (state.autoExpandNames || DEFAULTS.autoExpandNames).join("\n");
+  el.prodBadge.checked = state.prodBadge !== false;
+  el.prodBadgeText.value = state.prodBadgeText || DEFAULTS.prodBadgeText;
+  el.nonProdMarkers.value = (state.nonProdMarkers || DEFAULTS.nonProdMarkers).join("\n");
   el.notificationHalfWidth.checked = state.notificationHalfWidth !== false;
   el.notificationTimeout.value = state.notificationTimeout === "" || state.notificationTimeout == null
     ? "" : state.notificationTimeout;

@@ -465,12 +465,51 @@
     });
   }
 
+  // ---- Production environment badge ------------------------------------------
+  // Non-production URLs carry a marker (test / acc / tst / local). When none is
+  // present we treat the site as production and label the top bar, so it is
+  // obvious which environment you are about to edit.
+  function isProduction() {
+    const markers = (settings.nonProdMarkers || [])
+      .map((m) => String(m).trim().toLowerCase())
+      .filter(Boolean);
+    const url = (location.hostname + location.pathname).toLowerCase();
+    return !markers.some((m) => url.includes(m));
+  }
+
+  function updateProdBadge() {
+    const existing = document.getElementById("utm-prod-badge");
+    if (!settings.prodBadge || !isProduction()) {
+      if (existing) existing.remove();
+      return;
+    }
+    if (existing && existing.isConnected) return; // already in place
+
+    // The section bar: <header class="umb-app-header"> ... <ul class="sections">
+    let list = document.querySelector('[data-element="sections"]') ||
+               document.querySelector("ul.sections") ||
+               document.querySelector(".umb-sections__list") ||
+               document.querySelector(".umb-sections ul");
+    if (!list) {
+      const link = document.querySelector('[data-element^="section-"], .umb-sections a');
+      if (link) list = link.closest("ul");
+    }
+    if (!list) return; // top bar not rendered yet; the observer retries
+
+    const badge = document.createElement("li");
+    badge.id = "utm-prod-badge";
+    badge.className = "utm-prod-badge";
+    badge.textContent = settings.prodBadgeText || "Production environment";
+    list.appendChild(badge);
+  }
+
   function applyAll() {
     if (!active) return;
     decorateEnterButtons(); // runs in every mode, incl. "show"
     decorateEscButtons();
     handleNotifications();
     autoExpandTree();
+    updateProdBadge();
     if (mode === "show") return;
     const sel = settings.selectors.join(",");
     if (sel && mode === "button") {
@@ -506,6 +545,8 @@
     document.querySelectorAll(".utm-enter").forEach((el) => el.classList.remove("utm-enter"));
     document.querySelectorAll(".utm-esc").forEach((el) => el.classList.remove("utm-esc"));
     document.querySelectorAll("[data-utm-exp]").forEach((el) => { delete el.dataset.utmExp; });
+    const badge = document.getElementById("utm-prod-badge");
+    if (badge) badge.remove();
     hideBubble();
   }
 
