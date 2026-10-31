@@ -496,11 +496,21 @@
     }
     if (!list) return; // top bar not rendered yet; the observer retries
 
+    // Old Umbraco stacks the sections in a narrow column on the left; newer
+    // versions lay them out across the top. Pick the matching look.
+    const width = list.getBoundingClientRect().width;
+    if (!width) return; // not laid out yet; the observer retries
+    const vertical = width < 150;
+
     const badge = document.createElement("li");
     badge.id = "utm-prod-badge";
-    badge.className = "utm-prod-badge";
+    badge.className = "utm-prod-badge" + (vertical ? " utm-prod-badge--vertical" : "");
     badge.textContent = settings.prodBadgeText || "Production environment";
-    list.appendChild(badge);
+
+    // In the vertical bar, sit in the gap above Help rather than below it.
+    const spacer = list.querySelector('[data-element="section-expand"], li.expand');
+    if (vertical && spacer) list.insertBefore(badge, spacer);
+    else list.appendChild(badge);
   }
 
   function applyAll() {

@@ -117,3 +117,20 @@
   list-style: none;
   pointer-events: none;
 }
+
+/* Old Umbraco: the section bar is a narrow vertical column, so the label is
+   rotated to read bottom-to-top. */
+.utm-prod-badge--vertical {
+  display: block;
+  width: -moz-fit-content;
+  width: fit-content;
+  margin: 10px auto;
+  padding: 14px 5px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  text-align: center;
+  font-size: 12px;
+  letter-spacing: 1px;
+  max-height: 260px;
+  overflow: hidden;
+}
