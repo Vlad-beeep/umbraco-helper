@@ -477,40 +477,138 @@
     return !markers.some((m) => url.includes(m));
   }
 
+  // ---- Backoffice layout detection -------------------------------------------
+  // Three generations so far, detected from the DOM rather than a version string:
+  //   "stacked" - old Umbraco: sections run down a narrow column on the left
+  //   "inline"  - Umbraco 8-13: sections run across the top
+  //   "modern"  - Umbraco 14+: web components, header inside a shadow root
+  function findSectionsList() {
+    return document.querySelector('[data-element="sections"]') ||
+           document.querySelector("ul.sections") ||
+           document.querySelector(".umb-sections__list") ||
+           document.querySelector(".umb-sections ul") ||
+           (function () {
+             const link = document.querySelector('[data-element^="section-"], .umb-sections a');
+             return link ? link.closest("ul") : null;
+           })();
+  }
+
+  // Ordinary selectors cannot enter shadow roots, so walk them explicitly.
+  function deepFindTag(root, tag, depth) {
+    if (depth > 12) return null;
+    const kids = root.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const el = kids[i];
+      if (el.tagName.toLowerCase() === tag) return el;
+      if (el.shadowRoot) {
+        const inShadow = deepFindTag(el.shadowRoot, tag, depth + 1);
+        if (inShadow) return inShadow;
+      }
+      const hit = deepFindTag(el, tag, depth + 1);
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  let modernHeaderEl = null; // cached: the deep walk is not free
+  function modernHeaderSlot() {
+    if (!modernHeaderEl || !modernHeaderEl.isConnected) {
+      modernHeaderEl = deepFindTag(document.body, "umb-backoffice-header", 0);
+    }
+    if (!modernHeaderEl || !modernHeaderEl.shadowRoot) return null;
+    return modernHeaderEl.shadowRoot.firstElementChild || null;
+  }
+
+  function detectBackofficeLayout() {
+    const list = findSectionsList();
+    if (list) {
+      const items = Array.from(list.children).filter((el) => {
+        if (el.id === "utm-prod-badge") return false;
+        const r = el.getBoundingClientRect();
+        return r.width > 0 && r.height > 0;
+      });
+      if (items.length < 2) return null; // not laid out yet
+      const a = items[0].getBoundingClientRect();
+      const b = items[1].getBoundingClientRect();
+      const stacked = (b.top - a.top) > Math.max(4, a.height / 2);
+      return { kind: stacked ? "stacked" : "inline", list: list };
+    }
+    const slot = modernHeaderSlot();
+    return slot ? { kind: "modern", slot: slot } : null;
+  }
+
+  // A shadow root does not see our stylesheet, so that badge is styled inline.
+  const PROD_BADGE_STYLE =
+    "display:inline-flex;align-items:center;margin-left:16px;padding:3px 12px;" +
+    "border:1px solid rgba(255,110,110,0.55);border-radius:4px;" +
+    "background:rgba(214,28,28,0.18);color:#ff6b6b;font-size:13px;font-weight:700;" +
+    "letter-spacing:0.3px;white-space:nowrap;pointer-events:none;";
+
+  function findProdBadge() {
+    const inDoc = document.getElementById("utm-prod-badge");
+    if (inDoc) return inDoc;
+    // Only the modern backoffice hides it in a shadow root; skip the deep walk
+    // on older versions, where it would run on every pass for nothing.
+    if (findSectionsList()) return null;
+    const slot = modernHeaderSlot();
+    return slot ? slot.querySelector("#utm-prod-badge") : null;
+  }
+
   function updateProdBadge() {
-    const existing = document.getElementById("utm-prod-badge");
+    const existing = findProdBadge();
     if (!settings.prodBadge || !isProduction()) {
       if (existing) existing.remove();
       return;
     }
-    if (existing && existing.isConnected) return; // already in place
 
-    // The section bar: <header class="umb-app-header"> ... <ul class="sections">
-    let list = document.querySelector('[data-element="sections"]') ||
-               document.querySelector("ul.sections") ||
-               document.querySelector(".umb-sections__list") ||
-               document.querySelector(".umb-sections ul");
-    if (!list) {
-      const link = document.querySelector('[data-element^="section-"], .umb-sections a');
-      if (link) list = link.closest("ul");
+    const layout = detectBackofficeLayout();
+    if (!layout) return; // header not rendered yet; the observer retries
+
+    const text = settings.prodBadgeText || "Production environment";
+
+    if (layout.kind === "modern") {
+      let badge = existing;
+      if (!badge || !badge.isConnected) {
+        badge = document.createElement("div");
+        badge.id = "utm-prod-badge";
+        badge.style.cssText = PROD_BADGE_STYLE;
+      }
+      if (badge.textContent !== text) badge.textContent = text;
+      if (badge.parentElement !== layout.slot) {
+        const sections = layout.slot.querySelector("umb-backoffice-header-sections");
+        if (sections && sections.nextSibling) {
+          layout.slot.insertBefore(badge, sections.nextSibling);
+        } else {
+          layout.slot.appendChild(badge);
+        }
+      }
+      return;
     }
-    if (!list) return; // top bar not rendered yet; the observer retries
 
-    // Old Umbraco stacks the sections in a narrow column on the left; newer
-    // versions lay them out across the top. Pick the matching look.
-    const width = list.getBoundingClientRect().width;
-    if (!width) return; // not laid out yet; the observer retries
-    const vertical = width < 150;
-
-    const badge = document.createElement("li");
+    const stacked = layout.kind === "stacked";
+    const list = layout.list;
+    const badge = existing && existing.isConnected
+      ? existing
+      : document.createElement("li");
     badge.id = "utm-prod-badge";
-    badge.className = "utm-prod-badge" + (vertical ? " utm-prod-badge--vertical" : "");
-    badge.textContent = settings.prodBadgeText || "Production environment";
 
-    // In the vertical bar, sit in the gap above Help rather than below it.
-    const spacer = list.querySelector('[data-element="section-expand"], li.expand');
-    if (vertical && spacer) list.insertBefore(badge, spacer);
-    else list.appendChild(badge);
+    // Re-applied every pass, so a badge built before the bar finished laying
+    // out corrects itself instead of staying rotated in a horizontal bar.
+    const cls = "utm-prod-badge" + (stacked ? " utm-prod-badge--vertical" : "");
+    if (badge.className !== cls) badge.className = cls;
+    if (badge.textContent !== text) badge.textContent = text;
+
+    // In the stacked bar sit in the gap above Help; otherwise go last.
+    const spacer = stacked
+      ? list.querySelector('[data-element="section-expand"], li.expand')
+      : null;
+    if (spacer) {
+      if (badge.parentElement !== list || badge.nextElementSibling !== spacer) {
+        list.insertBefore(badge, spacer);
+      }
+    } else if (badge.parentElement !== list || badge.nextElementSibling) {
+      list.appendChild(badge);
+    }
   }
 
   function applyAll() {
@@ -555,8 +653,8 @@
     document.querySelectorAll(".utm-enter").forEach((el) => el.classList.remove("utm-enter"));
     document.querySelectorAll(".utm-esc").forEach((el) => el.classList.remove("utm-esc"));
     document.querySelectorAll("[data-utm-exp]").forEach((el) => { delete el.dataset.utmExp; });
-    const badge = document.getElementById("utm-prod-badge");
-    if (badge) badge.remove();
+    const prodBadge = findProdBadge();
+    if (prodBadge) prodBadge.remove();
     hideBubble();
   }
 
