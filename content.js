@@ -75,7 +75,8 @@
   // A stylesheet rule hides matched elements the moment they appear in the DOM,
   // so there's no flash before the per-element JavaScript runs.
   function updateStyle() {
-    if (!active) {
+    // Modern backoffice is styled through adopted shadow sheets instead.
+    if (!active || umbracoGeneration() === "modern") {
       if (styleEl) { styleEl.textContent = ""; }
       return;
     }
@@ -386,6 +387,7 @@
 
   function onKeydown(e) {
     if (!active) return;
+    if (umbracoGeneration() === "modern") return; // not mapped to 14+ yet
 
     if ((e.key === "Escape" || e.keyCode === 27) && settings.escClose) {
       const btn = findCloseButton();
@@ -475,6 +477,119 @@
       .filter(Boolean);
     const url = (location.hostname + location.pathname).toLowerCase();
     return !markers.some((m) => url.includes(m));
+  }
+
+  // ---- Backoffice generation --------------------------------------------------
+  // Everything below is version-scoped: a feature only runs on the generation it
+  // was written for, so old selectors never fire on a backoffice that renamed
+  // everything.
+  //   "modern"  - Umbraco 14+: Lit web components, UI inside shadow roots
+  //   "classic" - Umbraco 8-13: sections bar across the top
+  //   "legacy"  - older Umbraco: sections stacked in a column on the left
+  let genCache = null;
+  function umbracoGeneration() {
+    if (genCache && genCache.el && genCache.el.isConnected) return genCache.kind;
+    const app = document.querySelector("umb-app");
+    if (app) { genCache = { kind: "modern", el: app }; return "modern"; }
+    const list = findSectionsList();
+    if (!list) { genCache = null; return null; }
+    const items = Array.from(list.children).filter((el) => {
+      if (el.id === "utm-prod-badge") return false;
+      const r = el.getBoundingClientRect();
+      return r.width > 0 && r.height > 0;
+    });
+    if (items.length < 2) return null; // not laid out yet
+    const a = items[0].getBoundingClientRect();
+    const b = items[1].getBoundingClientRect();
+    const kind = (b.top - a.top) > Math.max(4, a.height / 2) ? "legacy" : "classic";
+    genCache = { kind: kind, el: list };
+    return kind;
+  }
+
+  // ---- Modern (14+) styling ---------------------------------------------------
+  // Our stylesheet cannot reach into shadow roots, so one constructed sheet is
+  // adopted by every root. Rules are self-targeting via :host(...), so a single
+  // sheet can safely live in all of them.
+  let shadowSheet = null;
+  let shadowCssText = null;
+  let lastAdoptSweep = 0;
+
+  function collectShadowRoots(node, depth, out) {
+    if (depth > 60) return;
+    const kids = node.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const el = kids[i];
+      if (el.shadowRoot) {
+        out.push(el.shadowRoot);
+        collectShadowRoots(el.shadowRoot, depth + 1, out);
+      }
+      collectShadowRoots(el, depth + 1, out);
+    }
+  }
+
+  function modernCss() {
+    let css = "";
+    if (mode !== "show") {
+      // The field description, i.e. the tooltip text we hide elsewhere.
+      css += ":host(umb-property-layout) #description { display: none !important; }\n";
+    }
+    if (settings.compactSpacing) {
+      css += ":host(umb-property-layout) { margin-bottom: 4px !important; }\n";
+    }
+    if (settings.compactTree) {
+      css += ":host(uui-menu-item) #label-button { padding-top: 2px !important;" +
+             " padding-bottom: 2px !important; }\n";
+    }
+    if (settings.notificationHalfWidth) {
+      css += ":host(uui-toast-notification) { max-width: 50% !important; }\n";
+    }
+    if (settings.disableSidebarAnimation) {
+      css += ":host(uui-modal-sidebar), :host(uui-modal-dialog), :host(uui-modal-container)" +
+             " { transition: none !important; animation: none !important; }\n";
+    }
+    return css;
+  }
+
+  function applyModernCss() {
+    if (!shadowSheet) {
+      try { shadowSheet = new CSSStyleSheet(); }
+      catch (e) { return; } // no constructable stylesheets: nothing we can do
+    }
+    const css = modernCss();
+    const changed = css !== shadowCssText;
+    if (changed) {
+      try { shadowSheet.replaceSync(css); } catch (e) { return; }
+      shadowCssText = css;
+    }
+    // Walking every shadow root is not free, so sweep on a timer unless the
+    // rules themselves changed (then it must take effect at once).
+    const now = Date.now();
+    if (!changed && now - lastAdoptSweep < 750) return;
+    lastAdoptSweep = now;
+
+    const roots = [];
+    collectShadowRoots(document.body, 0, roots);
+    for (const root of roots) {
+      try {
+        if (!root.adoptedStyleSheets.includes(shadowSheet)) {
+          root.adoptedStyleSheets = [...root.adoptedStyleSheets, shadowSheet];
+        }
+      } catch (e) { /* root may reject adoption */ }
+    }
+  }
+
+  function clearModernCss() {
+    if (!shadowSheet) return;
+    const roots = [];
+    collectShadowRoots(document.body, 0, roots);
+    for (const root of roots) {
+      try {
+        if (root.adoptedStyleSheets.includes(shadowSheet)) {
+          root.adoptedStyleSheets = root.adoptedStyleSheets.filter((x) => x !== shadowSheet);
+        }
+      } catch (e) {}
+    }
+    shadowCssText = null;
   }
 
   // ---- Backoffice layout detection -------------------------------------------
@@ -613,11 +728,20 @@
 
   function applyAll() {
     if (!active) return;
+
+    updateProdBadge(); // supported on every generation
+
+    if (umbracoGeneration() === "modern") {
+      // Umbraco 14+ renamed everything and hid it in shadow roots; the classic
+      // selectors below would silently match nothing, so skip them entirely.
+      applyModernCss();
+      return;
+    }
+
     decorateEnterButtons(); // runs in every mode, incl. "show"
     decorateEscButtons();
     handleNotifications();
     autoExpandTree();
-    updateProdBadge();
     if (mode === "show") return;
     const sel = settings.selectors.join(",");
     if (sel && mode === "button") {
@@ -655,6 +779,7 @@
     document.querySelectorAll("[data-utm-exp]").forEach((el) => { delete el.dataset.utmExp; });
     const prodBadge = findProdBadge();
     if (prodBadge) prodBadge.remove();
+    clearModernCss();
     hideBubble();
   }
 

@@ -17,6 +17,7 @@ A Chrome extension that declutters the **Umbraco backoffice** — hide tooltips,
 | 📏 | **Compact view** — tighter field spacing and a denser content tree |
 | 🌳 | **Auto-expand tree** — Content unfolds the root and the “Site” level; named nodes (e.g. “Site settings”, “Portal maintenance”) unfold in any section |
 | 🔔 | **Tidy notifications** — the green/yellow publish toasts are smaller and auto-dismiss |
+| 🧭 | **Version-aware** — auto-detects the backoffice generation (legacy / 8–13 / 14+) and applies only what fits that version |
 | ⚠️ | **Prod warning** — a red “Production environment” label when the URL has no test/acc/tst/local marker; adapts to old, current and Umbraco 14+ backoffices |
 | 🚦 | **Status icon** — grey when off, blue when working, blinks green twice when a site is picked up |
 
