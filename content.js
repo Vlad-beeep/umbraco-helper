@@ -387,7 +387,7 @@
 
   function onKeydown(e) {
     if (!active) return;
-    if (umbracoGeneration() === "modern") return; // not mapped to 14+ yet
+    if (umbracoGeneration() === "modern") { onKeydownModern(e); return; }
 
     if ((e.key === "Escape" || e.keyCode === 27) && settings.escClose) {
       const btn = findCloseButton();
@@ -539,6 +539,19 @@
     if (settings.compactTree) {
       css += ":host(uui-menu-item) #label-button { padding-top: 2px !important;" +
              " padding-bottom: 2px !important; }\n";
+    }
+    if (mode === "button") {
+      // The info button lives inside the property shadow root, so it needs its
+      // styling here; the popup bubble itself sits in the light DOM.
+      css += ":host(umb-property-layout) .utm-btn { all: unset; cursor: pointer;" +
+             " display: inline-flex; align-items: center; justify-content: center;" +
+             " width: 16px; height: 16px; margin-left: 4px; font-size: 12px;" +
+             " color: #9aa3ba; opacity: 0; transition: opacity .12s;" +
+             " vertical-align: middle; }\n";
+      css += ":host(umb-property-layout) #headerColumn:hover .utm-btn," +
+             " :host(umb-property-layout) .utm-btn:focus { opacity: .75; }\n";
+      css += ":host(umb-property-layout) .utm-btn:hover" +
+             " { color: #2b56c6; opacity: 1; }\n";
     }
     if (settings.notificationHalfWidth) {
       css += ":host(uui-toast-notification) { max-width: 50% !important; }\n";
@@ -726,6 +739,185 @@
     }
   }
 
+  // ---- Modern (14+) features --------------------------------------------------
+  // Everything in 14+ lives in shadow roots, so each helper walks them. The pass
+  // is throttled because that walk is not cheap.
+  function deepQueryAll(selector, root, depth, out) {
+    out = out || [];
+    depth = depth || 0;
+    root = root || document.body;
+    if (depth > 60) return out;
+    const kids = root.children || [];
+    for (let i = 0; i < kids.length; i++) {
+      const el = kids[i];
+      try { if (el.matches && el.matches(selector)) out.push(el); } catch (e) {}
+      if (el.shadowRoot) deepQueryAll(selector, el.shadowRoot, depth + 1, out);
+      deepQueryAll(selector, el, depth + 1, out);
+    }
+    return out;
+  }
+
+  // "Save and publish..." in 14+ ends with a real ellipsis character.
+  function normalizeLabel(text) {
+    return String(text || "").replace(/[\u2026.]+$/, "").trim().toLowerCase();
+  }
+
+  function modernButtonLabel(el) {
+    return normalizeLabel(el.getAttribute("label") || el.textContent);
+  }
+
+  // Text of a component including its shadow roots: 14+ renders the description
+  // inside <umb-ufm-render>, so plain textContent comes back empty.
+  function deepText(node, depth) {
+    depth = depth || 0;
+    if (!node || depth > 20) return "";
+    let text = "";
+    if (depth === 0 && node.shadowRoot) text += deepText(node.shadowRoot, depth + 1);
+    const kids = node.childNodes || [];
+    for (let i = 0; i < kids.length; i++) {
+      const n = kids[i];
+      if (n.nodeType === 3) text += n.textContent;
+      else if (n.nodeType === 1) {
+        if (n.shadowRoot) text += deepText(n.shadowRoot, depth + 1);
+        text += deepText(n, depth + 1);
+      }
+    }
+    return text;
+  }
+
+  function modernTooltips() {
+    if (mode !== "button") return; // hide / show are pure CSS
+    deepQueryAll("umb-property-layout").forEach((layout) => {
+      const sr = layout.shadowRoot;
+      if (!sr) return;
+      const desc = sr.getElementById("description");
+      if (!desc) return;
+      const text = deepText(desc).trim();
+      if (!text) return;
+      if (sr.querySelector(".utm-btn")) return;
+      const host = sr.getElementById("label") || sr.getElementById("headerColumn");
+      if (!host) return;
+
+      const html = text.replace(/[&<>]/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" }[c]));
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "utm-btn";
+      btn.title = "Show tooltip";
+      btn.setAttribute("aria-label", "Show tooltip");
+      btn.textContent = "\u24D8";
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (bubble && bubble.style.display === "block" && btn._utmOpen) {
+          hideBubble();
+          btn._utmOpen = false;
+        } else {
+          clearOpenFlags();
+          showBubble(btn, html);
+          btn._utmOpen = true;
+        }
+      });
+      host.appendChild(btn);
+    });
+  }
+
+  function modernAutoExpand() {
+    if (!settings.autoExpandTree) return;
+    const isContent = /\/section\/content/.test(location.pathname);
+    const names = (settings.autoExpandNames || [])
+      .map((n) => String(n).trim().toLowerCase())
+      .filter(Boolean);
+
+    deepQueryAll("uui-menu-item").forEach((item) => {
+      const sr = item.shadowRoot;
+      if (!sr) return;
+      const caret = sr.getElementById("caret-button");
+      if (!caret) return; // no children to open
+      if (item.dataset.utmExp === "1") return;
+
+      const label = (item.getAttribute("label") || "").trim();
+      const href = item.getAttribute("href") || "";
+      if (/recycle/i.test(label) || /recycle/i.test(href)) return;
+
+      // Depth 0 = root, 1 = its children; count the umb-tree-item wrappers.
+      let depth = -1;
+      let node = item;
+      while (node) {
+        if (node.tagName && node.tagName.toLowerCase() === "umb-tree-item") depth++;
+        node = node.parentElement || (node.getRootNode && node.getRootNode().host) || null;
+      }
+
+      const named = names.includes(label.toLowerCase());
+      if (!named && !(isContent && depth <= 1)) return;
+
+      item.dataset.utmExp = "1";
+      if (item.hasAttribute("show-children")) return; // already open
+      caret.click();
+    });
+  }
+
+  function modernNotifications() {
+    const raw = settings.notificationTimeout;
+    if (raw === "" || raw == null || isNaN(Number(raw))) return;
+    const ms = Math.max(0, Number(raw));
+    deepQueryAll("uui-toast-notification").forEach((toast) => {
+      if (toast.dataset.utmNotif === "1") return;
+      toast.dataset.utmNotif = "1";
+      setTimeout(() => {
+        if (!toast.isConnected) return;
+        try {
+          if (typeof toast.close === "function") toast.close();
+          else toast.open = false;
+        } catch (e) { toast.remove(); }
+      }, ms);
+    });
+  }
+
+  let lastModernPass = 0;
+  function applyModernFeatures() {
+    const now = Date.now();
+    if (now - lastModernPass < 250) return;
+    lastModernPass = now;
+    modernTooltips();
+    modernAutoExpand();
+    modernNotifications();
+  }
+
+  // ---- Modern keyboard shortcuts ----------------------------------------------
+  function modernModalOpen() {
+    return deepQueryAll("uui-modal-sidebar, uui-modal-dialog").some(isVisible);
+  }
+
+  function modernFindByLabels(labels) {
+    const wanted = (labels || []).map(normalizeLabel).filter(Boolean);
+    if (!wanted.length) return null;
+    const buttons = deepQueryAll("uui-button, button").filter(isVisible);
+    for (const want of wanted) {
+      const hit = buttons.find((b) => {
+        const l = modernButtonLabel(b);
+        return l === want || l.startsWith(want + " ");
+      });
+      if (hit) return hit;
+    }
+    return null;
+  }
+
+  function onKeydownModern(e) {
+    if ((e.key === "Escape" || e.keyCode === 27) && settings.escClose) {
+      if (!modernModalOpen()) return; // nothing open: leave Escape alone
+      const btn = modernFindByLabels(settings.escCloseLabels);
+      if (btn) { e.preventDefault(); e.stopPropagation(); btn.click(); }
+      return;
+    }
+    if ((e.key === "Enter" || e.keyCode === 13) && settings.enterSubmit) {
+      if (e.shiftKey || e.ctrlKey || e.altKey || e.metaKey) return;
+      if (isEditable(e.target) || isEditable(document.activeElement)) return;
+      const btn = modernFindByLabels(settings.enterButtonLabels);
+      if (btn) { e.preventDefault(); e.stopPropagation(); btn.click(); }
+    }
+  }
+
   function applyAll() {
     if (!active) return;
 
@@ -735,6 +927,7 @@
       // Umbraco 14+ renamed everything and hid it in shadow roots; the classic
       // selectors below would silently match nothing, so skip them entirely.
       applyModernCss();
+      applyModernFeatures();
       return;
     }
 
