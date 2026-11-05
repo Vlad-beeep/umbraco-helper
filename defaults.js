@@ -5,7 +5,7 @@
     // Bump this whenever a shipped "system" list below (selectors / labels /
     // overlay selectors) changes, so existing installs pick up the new values
     // on reload instead of keeping their frozen stored copy. See background.js.
-    defaultsVersion: 7,
+    defaultsVersion: 8,
 
     // Global tooltip mode: "button" | "hide" | "show"
     //   button -> replace tooltip/help text with an "ⓘ Show tooltip" button
@@ -94,7 +94,7 @@
     // markers below; when none is present the top bar gets a red label.
     prodBadge: true,
     prodBadgeText: "Production environment",
-    nonProdMarkers: ["test", "acc", "tst", "local"],
+    nonProdMarkers: ["test", "acc", "tst", "uat", "local"],
 
     // Publish/save toast notifications (green success / yellow warning).
     // Halve their width (height grows to fit if text wraps).
